@@ -1,0 +1,22 @@
+[package]
+name = "lazer"
+edition = "2018"
+version = "0.1.0"
+authors = ["kprotty"]
+
+[dependencies]
+lzr = { path = "./lzr" }
+
+[dependencies.libc]
+version = "0.2"
+default-features = false
+
+[profile.dev]
+panic = "abort"
+incremental = true
+overflow-checks = false
+
+[profile.release]
+lto = true
+panic = "abort"
+overflow-checks = false

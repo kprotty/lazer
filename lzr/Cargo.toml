@@ -1,0 +1,9 @@
+[package]
+name = "lzr"
+edition = "2018"
+version = "0.1.0"
+authors = ["kprotty"]
+
+[dependencies.libc]
+version = "0.2"
+default-features = false
