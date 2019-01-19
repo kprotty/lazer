@@ -17,17 +17,18 @@ typedef struct {
 #define GetAtomSize(atom) ((atom)->info & 0xff)
 
 typedef struct {
-    // hash mapping info
-    size_t mask;
+    // hash map info
     size_t size;
-    size_t capacity;
-    Atom** atoms;
-    Atom** mapping;
+    size_t mask;
+    size_t max_atoms;
+    Atom** atom_cells;
+    Atom** resize_cells;
 
-    // atom memory info
-    size_t mem_top;
-    uint8_t* memory;
-    size_t mem_committed;
+    // atom heap info
+    size_t heap_top;
+    size_t heap_size;
+    size_t heap_committed;
+    uint8_t* atom_heap;
 } AtomTable;
 
 bool AtomTableInit(AtomTable* table, size_t max_atoms);

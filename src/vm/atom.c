@@ -1,34 +1,42 @@
 #include "atom.h"
+#include "info.h"
 #include "memory.h"
 #include <string.h>
 
-#define PAGE_SIZE 4096
-#define ATOM_MEMORY_PAGE_SIZE (2 * 1024 * 1024)
 #define GetAtomDisplacement(atom) ((atom)->info >> 8)
-#define BumpAtomDisplacement(atom) ((atom)->info |= (GetAtomDisplacement(atom) + 1) << 8)
+#define BumpAtomDisplacement(atom) ((atom)->info = \
+    GetAtomSize(atom) | ((GetAtomDisplacement(atom) + 1) << 8))
 
 bool TableGrow(AtomTable* table);
 void TableInsert(AtomTable* table, Atom* atom);
-Atom* AllocAtom(AtomTable* table, Hash hash, const uint8_t* bytes, size_t len);
 Atom* TableFind(AtomTable* table, Hash hash, const uint8_t* bytes, size_t len);
+
 bool AtomCompareEq(const Atom* atom, Hash hash, const uint8_t* bytes, size_t len);
+Atom* AllocAtom(AtomTable* table, Hash hash, const uint8_t* bytes, size_t len);
 
 bool AtomTableInit(AtomTable* table, size_t max_atoms) {
-    table->capacity = LZR_NEXTPOW2(max_atoms);
-    table->mask = LZR_MIN(table->capacity, 1024) - 1;
-    table->memory = MemoryMap(ATOM_MEMORY_PAGE_SIZE, false);
-    table->atoms = MemoryMap(table->capacity * 2 * sizeof(Atom*), false);
+    ProgramInfo* info = GetProgramInfo();
+    max_atoms = LZR_MAX(max_atoms, 8);
+    max_atoms = LZR_NEXTPOW2(max_atoms);
+    table->max_atoms = max_atoms;
 
+    size_t alloc_size = max_atoms * 2 * sizeof(Atom*);
+    alloc_size = LZR_ALIGN(alloc_size, info->alloc_granularity);
+
+    // allocate atom heap
+    table->heap_top = 0;
+    table->heap_committed = 0;
+    table->heap_size = LZR_ALIGN(info->alloc_granularity, (2 * 1024 * 1024));
+    table->atom_heap = MemoryMap(table->heap_size, false);
+
+    // allocate atom mapping memory
     table->size = 0;
-    table->mem_top = 0;
-    table->mem_committed = 0;
-    table->mapping = table->atoms;
+    table->mask = LZR_MIN(max_atoms, 1024) - 1;
+    table->atom_cells = MemoryMap(alloc_size, false);
+    table->resize_cells = table->atom_cells + (alloc_size / 2 / sizeof(Atom*));
+    MemoryCommit(table->atom_cells, (table->mask + 1) * sizeof(Atom*));
 
-    if ((table->memory == NULL) || (table->atoms == NULL))
-        return false;
-
-    MemoryCommit(table->atoms, (table->mask + 1) * sizeof(Atom*));
-    return true;
+    return table->atom_heap != NULL && table->atom_cells != NULL;
 }
 
 Atom* AtomTableFind(AtomTable* table, const uint8_t* bytes, size_t len) {
@@ -66,11 +74,11 @@ Atom* TableFind(AtomTable* table, Hash hash, const uint8_t* bytes, size_t len) {
     size_t displacement = 0;
 
     while (true) {
-        Atom** atom = &table->atoms[index];
-        if (*atom == NULL || displacement > GetAtomDisplacement(*atom))
+        Atom* atom = table->atom_cells[index];
+        if (atom == NULL || displacement > GetAtomDisplacement(atom))
             return NULL;
-        else if (AtomCompareEq(*atom, hash, bytes, len))
-            return *atom;
+        else if (AtomCompareEq(atom, hash, bytes, len))
+            return atom;
 
         displacement++;
         index = (index + 1) & table->mask;
@@ -82,7 +90,7 @@ void TableInsert(AtomTable* table, Atom* current_atom) {
     size_t index = GetAtomHash(current_atom) & table->mask;
 
     while (true) {
-        Atom** atom = &table->atoms[index];
+        Atom** atom = &table->atom_cells[index];
         if (*atom == NULL) {
             table->size++;
             *atom = current_atom;
@@ -92,51 +100,57 @@ void TableInsert(AtomTable* table, Atom* current_atom) {
             current_atom = *atom;
             *atom = temp;
         }
-
+        
         index = (index + 1) & table->mask;
         BumpAtomDisplacement(current_atom);
     }
 }
 
 bool TableGrow(AtomTable* table) {
-    Atom** old_atoms = table->atoms;
-    size_t old_capacity = table->mask;
+    size_t old_capacity = table->mask + 1;
     size_t new_capacity = old_capacity << 1;
+    Atom** old_atom_cells = table->atom_cells;
 
-    if (new_capacity > table->capacity)
+    if (new_capacity > table->max_atoms)
         return false;
-    
+
     table->size = 0;
     table->mask = new_capacity - 1;
-    table->atoms = &table->mapping[old_atoms == table->mapping ? table->capacity : 0];
+    table->atom_cells = table->resize_cells;
+    table->resize_cells = old_atom_cells;
 
-    MemoryCommit(table->atoms, new_capacity * sizeof(Atom*));
+    MemoryCommit(table->atom_cells, new_capacity * sizeof(Atom*));
     for (size_t atom_index = 0; atom_index < old_capacity; atom_index++)
-        if (old_atoms[atom_index] != NULL)
-            TableInsert(table, old_atoms[atom_index]);
-    MemoryDecommit(old_atoms, old_capacity * sizeof(Atom*));
+        if (old_atom_cells[atom_index] != NULL)
+            TableInsert(table, old_atom_cells[atom_index]);
+
+    MemoryDecommit(old_atom_cells, old_capacity * sizeof(Atom*));
+    return true;
 }
 
 Atom* AllocAtom(AtomTable* table, Hash hash, const uint8_t* bytes, size_t len) {
     const size_t atom_size = sizeof(Atom) + len;
+    ProgramInfo* program_info = GetProgramInfo();
 
-    if (table->mem_top + atom_size > ATOM_MEMORY_PAGE_SIZE) {
-        if ((table->memory = MemoryMap(ATOM_MEMORY_PAGE_SIZE, false)) == NULL)
+    if (table->heap_top + atom_size > table->heap_size) {
+        if ((table->atom_heap = MemoryMap(table->heap_size, false)) == NULL)
             return NULL;
-        table->mem_top = 0;
-        table->mem_committed = 0;        
+        table->heap_top = 0;
+        table->heap_committed = 0;        
     }
 
-    table->mem_top += atom_size;
-    if (table->mem_committed < table->mem_top) {
-        size_t commit_size = LZR_ALIGN(table->mem_top - table->mem_committed, PAGE_SIZE);
-        MemoryCommit(table->memory + table->mem_committed, commit_size);
-        table->mem_committed += commit_size;
+    table->heap_top += atom_size;
+    if (table->heap_committed < table->heap_top) {
+        size_t commit_size = table->heap_top - table->heap_committed;
+        commit_size = LZR_ALIGN(commit_size, program_info->page_size);
+        MemoryCommit(table->atom_heap + table->heap_committed, commit_size);
+        table->heap_committed += commit_size;
     }
 
-    Atom* atom = (Atom*) &table->memory[table->mem_top - atom_size];
+    Atom* atom = (Atom*) &table->atom_heap[table->heap_top - atom_size];
     memcpy(GetAtomText(atom), bytes, len);
     atom->hash = hash;
     atom->info = len;
+
     return atom;
 }
