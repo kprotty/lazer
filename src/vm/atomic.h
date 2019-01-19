@@ -12,6 +12,9 @@
 #define ATOMIC_ACQ_REL __ATOMIC_ACQ_REL
 #define ATOMIC_SEQ_CST __ATOMIC_SEQ_CST
 
+#define AtomicFence(ordering) \
+    __atomic_thread_fence(ordering)
+
 #define AtomicLoad(ptr, ordering) \
     __atomic_load_n(ptr, ordering)
 

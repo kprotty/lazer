@@ -15,12 +15,14 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     list(APPEND libraries pthread)
 endif()
 
-set(src_dir src)
-file(GLOB_RECURSE sources ${src_dir}/*.c)
-file(GLOB_RECURSE headers ${src_dir}/*.h)
+list(APPEND cflags -mcx16)
+list(APPEND libraries atomic)
+
+file(GLOB_RECURSE sources src/*.c)
+file(GLOB_RECURSE headers src/*.h)
 
 add_executable(lazer ${sources} ${headers})
 target_link_libraries(lazer ${libraries})
+target_include_directories(lazer PRIVATE src)
 target_compile_options(lazer PRIVATE ${cflags})
 target_compile_definitions(lazer PRIVATE ${defines})
-target_include_directories(lazer PRIVATE ${src_dir})
