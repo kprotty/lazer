@@ -3,13 +3,28 @@
 A programming language written with memory usage and concurrency in mind. Goal has been to support the best of elixir while still keeping a low memory profile. Lazer contains both a lazer script compiler and the virtual machine (specs will be defined soon). Many thanks to, and inspirations from, BEAM (erlang/elixir vm) as well as Ponylang.
 
 ## Compiling
-
-To run tests:
 ```
-cargo test -p lzr
+mkdir build
+cd build
+cmake -G "Unix Makefiles" ..
+make
 ```
-
-To build lazer executable:
-```
-cargo build --release
-```
+## Planned Tasks
+- [x] Terms
+- [x] Hashing
+- [x] Memory Mapping
+- [ ] Atoms & Atom table
+- [ ] Modules & Functions
+- [ ] Actors & Scheduling
+- [ ] GC & Messages
+- [ ] Interp Execution
+- [ ] ASM Compiler
+- [ ] Source Lexer & Parser
+- [ ] Source IR & CodeGen
+- [ ] Bootstrap ASM Compiler
+- [ ] Bootstrap Source Compiler
+- [ ] Codegen Optimizations
+- [ ] Runtime Optimizations
+- [ ] FFI Capabilities
+- [ ] Asynchronous IO
+- [ ] Library Wrapping
