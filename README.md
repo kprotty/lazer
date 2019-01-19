@@ -13,7 +13,7 @@ make
 - [x] Terms
 - [x] Hashing
 - [x] Memory Mapping
-- [ ] Atoms & Atom table
+- [x] Atoms & Atom table
 - [ ] Modules & Functions
 - [ ] Actors & Scheduling
 - [ ] GC & Messages
