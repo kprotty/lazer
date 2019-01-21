@@ -1,5 +1,4 @@
 #include "atom.h"
-#include "info.h"
 #include "memory.h"
 #include <string.h>
 
@@ -11,23 +10,22 @@ bool TableGrow(AtomTable* table);
 void TableInsert(AtomTable* table, Atom* atom);
 Atom* TableFind(AtomTable* table, Hash hash, const uint8_t* bytes, size_t len);
 
-bool AtomCompareEq(const Atom* atom, Hash hash, const uint8_t* bytes, size_t len);
+#define ATOM_HEAP_CHUNK_SIZE (2 * 1024 * 1024)
 Atom* AllocAtom(AtomTable* table, Hash hash, const uint8_t* bytes, size_t len);
+bool AtomCompareEq(const Atom* atom, Hash hash, const uint8_t* bytes, size_t len);
 
 bool AtomTableInit(AtomTable* table, size_t max_atoms) {
-    ProgramInfo* info = GetProgramInfo();
     max_atoms = LZR_MAX(max_atoms, 8);
     max_atoms = LZR_NEXTPOW2(max_atoms);
     table->max_atoms = max_atoms;
 
     size_t alloc_size = max_atoms * 2 * sizeof(Atom*);
-    alloc_size = LZR_ALIGN(alloc_size, info->alloc_granularity);
+    alloc_size = LZR_ALIGN(alloc_size, LZR_ALLOC_GRANULARITY);
 
     // allocate atom heap
     table->heap_top = 0;
     table->heap_committed = 0;
-    table->heap_size = LZR_ALIGN(info->alloc_granularity, (2 * 1024 * 1024));
-    table->atom_heap = MemoryMap(table->heap_size, false);
+    table->atom_heap = MemoryMap(ATOM_HEAP_CHUNK_SIZE, false);
 
     // allocate atom mapping memory
     table->size = 0;
@@ -130,10 +128,9 @@ bool TableGrow(AtomTable* table) {
 
 Atom* AllocAtom(AtomTable* table, Hash hash, const uint8_t* bytes, size_t len) {
     const size_t atom_size = sizeof(Atom) + len;
-    ProgramInfo* program_info = GetProgramInfo();
 
-    if (table->heap_top + atom_size > table->heap_size) {
-        if ((table->atom_heap = MemoryMap(table->heap_size, false)) == NULL)
+    if (table->heap_top + atom_size > ATOM_HEAP_CHUNK_SIZE) {
+        if ((table->atom_heap = MemoryMap(ATOM_HEAP_CHUNK_SIZE, false)) == NULL)
             return NULL;
         table->heap_top = 0;
         table->heap_committed = 0;        
@@ -142,7 +139,7 @@ Atom* AllocAtom(AtomTable* table, Hash hash, const uint8_t* bytes, size_t len) {
     table->heap_top += atom_size;
     if (table->heap_committed < table->heap_top) {
         size_t commit_size = table->heap_top - table->heap_committed;
-        commit_size = LZR_ALIGN(commit_size, program_info->page_size);
+        commit_size = LZR_ALIGN(commit_size, LZR_PAGE_SIZE);
         MemoryCommit(table->atom_heap + table->heap_committed, commit_size);
         table->heap_committed += commit_size;
     }

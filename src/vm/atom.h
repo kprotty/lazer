@@ -26,7 +26,6 @@ typedef struct {
 
     // atom heap info
     size_t heap_top;
-    size_t heap_size;
     size_t heap_committed;
     uint8_t* atom_heap;
 } AtomTable;
