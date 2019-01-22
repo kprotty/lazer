@@ -8,13 +8,14 @@ typedef struct QueueNode {
 } QueueNode;
 
 typedef struct {
+    QueueNode stub;
     QueueNode* tail;
     ATOMIC(QueueNode*) head;
 } MpscQueue;
 
+void MpscQueueInit(MpscQueue* queue);
 QueueNode* MpscQueuePop(MpscQueue* queue);
 void MpscQueuePush(MpscQueue* queue, QueueNode* node);
-void MpscQueueInit(MpscQueue* queue, QueueNode* stub);
 
 typedef union {
     #if defined(LZR_64)
@@ -29,6 +30,7 @@ typedef union {
 } ABAQueueNode;
 
 typedef struct {
+    QueueNode stub;
     ATOMIC(QueueNode*) head;
     #if defined(LZR_X86)
         ABAQueueNode tail;
@@ -37,8 +39,8 @@ typedef struct {
     #endif
 } MpmcQueue;
 
+void MpmcQueueInit(MpmcQueue* queue);
 QueueNode* MpmcQueuePop(MpmcQueue* queue);
 void MpmcQueuePush(MpmcQueue* queue, QueueNode* node);
-void MpmcQueueInit(MpmcQueue* queue, QueueNode* stub);
 
 #endif // _LZR_QUEUE_H

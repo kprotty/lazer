@@ -1,9 +1,9 @@
 #include "queue.h"
 
-void MpscQueueInit(MpscQueue* queue, QueueNode* stub) {
-    stub->next = NULL;
-    queue->tail = stub;
-    AtomicStore(&queue->head, stub, ATOMIC_RELAXED);
+void MpscQueueInit(MpscQueue* queue) {
+    queue->stub.next = NULL;
+    queue->tail = &queue->stub;
+    AtomicStore(&queue->head, &queue->stub, ATOMIC_RELAXED);
 }
 
 void MpscQueuePush(MpscQueue* queue, QueueNode* node) {
@@ -25,13 +25,15 @@ QueueNode* MpscQueuePop(MpscQueue* queue) {
     return next;
 }
 
-void MpmcQueueInit(MpmcQueue* queue, QueueNode* stub) {
-    AtomicStore(&queue->head, stub, ATOMIC_RELAXED);
+void MpmcQueueInit(MpmcQueue* queue) {
+    queue->stub.next = NULL;
+    AtomicStore(&queue->head, &queue->stub, ATOMIC_RELAXED);
+
     #if defined(LZR_X86)
-        queue->tail.node = stub;
+        queue->tail.node = &queue->stub;
         queue->tail.counter = 0;
     #elif defined(LZR_ARM)
-        queue->tail = stub;
+        queue->tail = &queue->stub;
     #endif
 }
 
