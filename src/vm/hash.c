@@ -52,9 +52,7 @@ Hash fnv1a_hash(const uint8_t* bytes, size_t len) {
 Hash fx_hash(const uint8_t* bytes, size_t len) {
     size_t hash = 0;
     FX_HASH_LOOP(size_t, hash, bytes, len)
-    #ifdef LZR_64
-        FX_HASH_LOOP(uint32_t, hash, bytes, len)
-    #endif
+    FX_HASH_LOOP(uint32_t, hash, bytes, len)
     FX_HASH_LOOP(uint8_t, hash, bytes, len)
     return (Hash) hash;
 }

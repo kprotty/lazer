@@ -15,12 +15,6 @@
     #define LZR_ARM
 #endif
 
-#if UINTPTR_MAX == 0xffffffffffffffff
-    #define LZR_64
-#elif UINTPTR_MAX == 0xffffffff
-    #define LZR_32
-#endif
-
 #define LZR_MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define LZR_MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define LZR_ALIGN(x, y) ((x) + ((y) - ((x) % (y))))

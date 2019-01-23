@@ -18,11 +18,7 @@ QueueNode* MpscQueuePop(MpscQueue* queue);
 void MpscQueuePush(MpscQueue* queue, QueueNode* node);
 
 typedef union {
-    #if defined(LZR_64)
-        __uint128_t dword;
-    #elif defined(LZR_32)
-        uint64_t dword;
-    #endif
+    __uint128_t dword;
     struct {
         size_t counter;
         QueueNode* node;
