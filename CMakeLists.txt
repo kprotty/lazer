@@ -3,6 +3,7 @@ project(lazer C)
 
 if (CMAKE_BUILD_TYPE MATCHES "Release")
     list(APPEND cflags)
+    list(APPEND defines LZR_RELEASE)
 else()
     list(APPEND cflags -Wall)
 endif()

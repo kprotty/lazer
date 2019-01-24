@@ -1,5 +1,4 @@
 #include "qword.h"
-#include <stdio.h>
 #include <string.h>
 
 #define PTR_LOCKED 0x1
@@ -22,10 +21,7 @@ QwordAllocator* CreateQwordAllocator() {
     const size_t map_size = sizeof(QwordAllocator) + chunks_size;
 
     QwordAllocator* allocator = MemoryMap(map_size, false);
-    if (allocator == NULL) {
-        fprintf(stderr, "[Allocator] Failed to memory map QwordAllocator\n");
-        abort();
-    }
+    LZR_ASSERT(allocator == NULL);
 
     MemoryCommit(allocator, sizeof(QwordAllocator));
     memset(allocator, 0, sizeof(QwordAllocator));
