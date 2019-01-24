@@ -124,6 +124,9 @@ Qword* AllocQword(QwordChunk* chunk) {
                 AtomicLoad(&chunk->header.next, ATOMIC_RELAXED)) == locked)
                 CpuYield();
         }
+
+        // try the next chunk
+        chunk = new_chunk;
     }
 }
 

@@ -2,6 +2,7 @@
 #define _LZR_MODUULE_H
 
 #include "atom.h"
+#include "qword.h"
 
 typedef struct Module Module;
 typedef struct Function {
