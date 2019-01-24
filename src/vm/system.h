@@ -33,9 +33,9 @@
 #define LZR_INLINE inline __attribute__((always_inline))
 
 #define LZR_ASSERT(expr) \
-    LZR_UNUSED((expr) && lzr_assert_failed(#expr, __FILE__, __LINE__))
+    LZR_UNUSED((!(expr)) && lzr_assert_failed(#expr, __FILE__, __LINE__))
 #define LZR_DEBUG_ASSERT(expr) \
-    LZR_UNUSED(LZR_LOG_DEBUG && (expr) lzr_assert_failed(#expr, __FILE__, __LINE__))
+    LZR_UNUSED(LZR_LOG_DEBUG && (!(expr)) && lzr_assert_failed(#expr, __FILE__, __LINE__))
 int lzr_assert_failed(
     const char* expr_literal,
     const char* file_path,
