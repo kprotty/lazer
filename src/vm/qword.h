@@ -28,8 +28,11 @@ typedef struct QwordChunk {
 } QwordChunk;
 
 QwordAllocator* CreateQwordAllocator();
+
 QwordChunk* AllocQwordChunk(QwordAllocator* allocator);
+
 Qword* AllocQword(QwordChunk* chunk);
+
 void FreeQword(Qword* qword);
 
 #endif // _LZR_QWORD_H

@@ -21,7 +21,7 @@ QwordAllocator* CreateQwordAllocator() {
     const size_t map_size = sizeof(QwordAllocator) + chunks_size;
 
     QwordAllocator* allocator = MemoryMap(map_size, false);
-    LZR_ASSERT(allocator == NULL);
+    LZR_ASSERT(allocator != NULL);
 
     MemoryCommit(allocator, sizeof(QwordAllocator));
     memset(allocator, 0, sizeof(QwordAllocator));
