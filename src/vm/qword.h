@@ -1,8 +1,8 @@
 #ifndef _LZR_QWORD_H
 #define _LZR_QWORD_H
 
-#include "atomic.h"
-#include "memory.h"
+#include "os/atomic.h"
+#include "os/memory.h"
 
 #define QWORD_CHUNK_SIZE (sizeof(size_t) * 8)
 #define QWORD_BITMAPS ((LZR_PAGE_SIZE / sizeof(size_t)) - 2)

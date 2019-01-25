@@ -1,7 +1,7 @@
 #ifndef _LZR_QUEUE_H
 #define _LZR_QUEUE_H
 
-#include "atomic.h"
+#include "os/atomic.h"
 
 typedef struct QueueNode {
     struct QueueNode* next;

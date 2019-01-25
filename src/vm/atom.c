@@ -1,5 +1,5 @@
 #include "atom.h"
-#include "memory.h"
+#include "os/memory.h"
 #include <string.h>
 
 #define GetAtomDisplacement(atom) ((atom)->info >> 8)

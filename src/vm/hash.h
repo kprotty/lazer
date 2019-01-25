@@ -1,7 +1,7 @@
 #ifndef _LZR_HASH_H
 #define _LZR_HASH_H
 
-#include "system.h"
+#include "os/system.h"
 
 Hash HashNumber(uint64_t number);
 
