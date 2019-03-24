@@ -6,25 +6,6 @@ A programming language written with memory usage and concurrency in mind. Goal h
 ```
 mkdir build
 cd build
-cmake -G "Unix Makefiles" ..
-make
+cmake -GNinja ..
+ninja
 ```
-## Planned Tasks
-- [x] Terms
-- [x] Hashing
-- [x] Memory Mapping
-- [x] Atoms & Atom table
-- [ ] Modules & Functions
-- [ ] Actors & Scheduling
-- [ ] GC & Messages
-- [ ] Interp Execution
-- [ ] ASM Compiler
-- [ ] Source Lexer & Parser
-- [ ] Source IR & CodeGen
-- [ ] Bootstrap ASM Compiler
-- [ ] Bootstrap Source Compiler
-- [ ] Codegen Optimizations
-- [ ] Runtime Optimizations
-- [ ] FFI Capabilities
-- [ ] Asynchronous IO
-- [ ] Library Wrapping
