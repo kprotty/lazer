@@ -6,7 +6,6 @@
 
 #if defined(_WIN32) || defined(WIN32)
     #define LZR_WINDOWS
-    #define _WIN32_NT 0x0600
     #define _WIN32_LEAN_AND_MEAN
 #elif defined(__linux__)
     #define LZR_LINUX
