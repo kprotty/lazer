@@ -26,7 +26,7 @@
 
     void* lzr_memory_map(void* addr, size_t bytes, bool commit) {
         int protect = PROT_READ | PROT_WRITE;
-        int flags = MAP_PRIVATE | MAP_ANONYMOUS | (addr != NULL ? MAP_FIXED);
+        int flags = MAP_PRIVATE | MAP_ANONYMOUS | (addr != NULL ? MAP_FIXED : 0);
         addr = mmap(addr, bytes, protect, flags, -1, 0);
         return addr == MAP_FAILED ? NULL : addr;
     }
