@@ -30,7 +30,7 @@ static bool heap_initialized = false;
 // memory map the entire 32gb heap into the address space (uncommitted)
 void lzr_heap_init() {
     assert(heap_initialized == false);
-    void* heap = lzr_memory_map((void*) HEAP_PTR(0), HEAP_SIZE, false);
+    lzr_memory_map((void*) HEAP_PTR(0), HEAP_SIZE, false);
     heap_initialized = true;
 }
 

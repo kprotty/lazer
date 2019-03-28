@@ -13,6 +13,10 @@ the bottom 3 bits are always zero so a pointer in this space can be compressed d
 #define LZR_HEAP_END        (1ULL << 36)
 #define LZR_HEAP_CHUNK_SIZE (2 * 1024 * 1024)
 
+// compression and decompression of 8-byte aligned heap pointers
+#define LZR_PTR_ZIP(ptr) ((uint32_t) ((((size_t) (ptr)) - LZR_HEAP_BEGIN) >> 3))
+#define LZR_PTR_UNZIP(ptr) ((void*) ((((size_t) (ptr)) << 3) + LZR_HEAP_BEGIN))
+
 // the heap needs to initially be mapped into memory unless alloc/free will segfault
 void lzr_heap_init();
 

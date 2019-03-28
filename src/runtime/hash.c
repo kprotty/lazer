@@ -27,7 +27,7 @@ uint32_t fx_hash(const char* bytes, size_t len) {
     while (len >= sizeof(size_t)) {
         hash = fx_hash_word(size_t, *((size_t*) bytes));
         bytes += sizeof(size_t);
-        len -= sizeof(size_t)
+        len -= sizeof(size_t);
     }
 
     // hash the remaining bytes
