@@ -25,10 +25,13 @@ typedef struct {
 
 static uint32_t heap_offset = 0;
 static bool heap_committed = false;
+static bool heap_initialized = false;
 
 // memory map the entire 32gb heap into the address space (uncommitted)
 void lzr_heap_init() {
-    void* lzr_heap = lzr_memory_map((void*) HEAP_PTR(0), HEAP_SIZE, false);
+    assert(heap_initialized == false);
+    void* heap = lzr_memory_map((void*) HEAP_PTR(0), HEAP_SIZE, false);
+    heap_initialized = true;
     assert(heap != NULL);
 }
 
