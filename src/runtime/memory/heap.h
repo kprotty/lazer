@@ -16,6 +16,12 @@ the bottom 3 bits are always zero so a pointer in this space can be compressed d
 // the heap needs to initially be mapped into memory unless alloc/free will segfault
 void lzr_heap_init();
 
+// used for reserving static memory that wont be free before committing the heap
+void* lzr_heap_reserve(uint16_t num_chunks);
+
+// no more reserving. lock it down and make it safe to use alloc/free
+void lzr_heap_commit();
+
 // allocate `num_chunk` amount of chunks (2mb).
 // The caller is responsible for committing it.
 void* lzr_heap_alloc(uint16_t num_chunks);
