@@ -32,7 +32,6 @@ void lzr_heap_init() {
     assert(heap_initialized == false);
     void* heap = lzr_memory_map((void*) HEAP_PTR(0), HEAP_SIZE, false);
     heap_initialized = true;
-    assert(heap != NULL);
 }
 
 // reserve a specific amount of the heap for static data.
@@ -50,8 +49,8 @@ void lzr_heap_commit() {
     heap_t* heap = (heap_t*) HEAP_PTR(heap_offset);
     
     assert(heap_committed == false);
-    heap_committed = lzr_memory_commit((void*) heap, sizeof(heap_t));
-    assert(heap_committed == true);
+    lzr_memory_commit((void*) heap, sizeof(heap_t));
+    heap_committed = true;
 
     heap->top_heap = 1;
     heap->top_chunk = 0;
