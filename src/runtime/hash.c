@@ -22,7 +22,6 @@ uint32_t fx_hash(const char* bytes, size_t len) {
     #define fx_hash_word(type, word) \
         (fx_rotl(type, hash, 5) ^ (word) * 0x517cc1b727220a95ULL)
 
-    // hash 8 bytes at a time
     size_t hash = 0;
     while (len >= sizeof(size_t)) {
         hash = fx_hash_word(size_t, *((size_t*) bytes));
@@ -30,7 +29,6 @@ uint32_t fx_hash(const char* bytes, size_t len) {
         len -= sizeof(size_t);
     }
 
-    // hash the remaining bytes
     while (len--)
         hash = fx_hash_word(size_t, (*bytes++));
 

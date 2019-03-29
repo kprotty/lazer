@@ -33,18 +33,14 @@ struct lzr_atom_table_t {
 #define ALIGN(value, alignment) ((value) + ((alignment) - (((value) % (alignment)))))
 
 void atom_heap_init(atom_heap_t* self, size_t max_atoms) {
-    // reserve enough address space (many MB) for the atom memory when allocating
     const size_t heap_size = ALIGN(MAX_ATOM_SIZE * max_atoms, LZR_HEAP_CHUNK_SIZE);
     self->heap = (lzr_atom_t*) lzr_heap_reserve(heap_size / LZR_HEAP_CHUNK_SIZE);
 
-    // commit only a small portion of it to the pagefile on windows
     self->commit_at = ((size_t) self->heap) + ATOM_HEAP_COMMIT_SIZE;
     lzr_memory_commit((void*) self->heap, ATOM_HEAP_COMMIT_SIZE);
 }
 
 lzr_atom_t* atom_heap_alloc(atom_heap_t* self, uint32_t hash, const char* text, size_t len) {
-    // allocate an atom on the heap. Make sure its aligned to 8 bytes for heap pointer compression.
-    // also make sure that theres enough committed memory (on windows) to use
     const size_t atom_size = ALIGN(sizeof(lzr_atom_t) + 1 + len, 8);
     if (((size_t) self->heap) + atom_size > self->commit_at) {
         lzr_memory_commit((void*) self->commit_at, ATOM_HEAP_COMMIT_SIZE);
@@ -143,13 +139,10 @@ void lzr_atom_table_init(lzr_atom_table_t* self, size_t max_atoms) {
     self->cells = (atom_cell_t*) lzr_heap_reserve(cell_heap_size);
     self->remap = (atom_cell_t*) lzr_heap_reserve(cell_heap_size);
 
-    // precommit a certain amount of cells for the table
     const size_t cells_to_commit = MIN(cell_size, ATOM_CELL_COMMIT_DEFAULT * sizeof(atom_cell_t));
     lzr_memory_commit((void*) self->cells, cells_to_commit);
-
-    // create a heap for the atoms themselves
+    
     atom_heap_init(&self->atom_heap, max_atoms);
-
     self->mask = cells_to_commit - 1;
     self->capacity = cell_size;
     self->size = 0;
