@@ -1,11 +1,3 @@
-# Lazer [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/kprotty/lazer/blob/master/LICENSE)
+# Documenting the design of lazer
 
-Imagine Elixir, but over-engineered and focused on memory usage. It should be safe to say that this is more of a research project than a solution to a practical problem therefore it should not be used in production. Heavily inspired by Erlang BEAM as well as Ponylang.
-
-## (makeshift) Compiling
-```
-mkdir build
-cd build
-cmake -GNinja ..
-ninja
-```
+This repo is for documenting the implementation of lazer before actually going to go implement it. Here, it can receive feedback as well as quick changes instead of having to fiddle around with an actual implementation. It may also allow others to implement their own if they want?

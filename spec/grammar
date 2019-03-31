@@ -1,0 +1,76 @@
+top_level := using | module
+
+using := "use" typedef
+typedef := type ("*" | type_list) ("as" type)?
+type_list := "(" typedef ("," typedef)* ")"
+
+module := "mod" type record? function*
+record := "type" "(" id ("," id)* ")"
+function := ("defp" | "def") id "(" function_args? ")" pattern_guards? "=>" expr+
+function_args := pattern ("," pattern)*
+
+pattern := binding | list_match | type_match | binary_match | literal
+pattern_guards := "when" base_expr ("," base_expr)*
+binding := id "=" pattern
+
+list_match := "[" list_patterns?"]"
+list_patterns := pattern ("," (pattern | list_tail))*
+list_tail := "..." pattern
+
+type_match := "$" type? "{" type_args? "}"
+type_args := type_arg ("," type_arg)*
+type_arg := (id ":" pattern) | id
+
+binary_match := "[<" binary_args? ">]"
+binary_args := binary_arg ("," binary_arg)*
+binary_arg := (id ":" binary_type) | "..." id
+binary_type := ("u" | "i" | "b") "(" binary_type_specs ")"
+binary_type_specs := binary_type_spec ("," binary_type_sec)*
+binary_type_spec := "little" | "big" | integer
+
+expr := case_expr | try_expr | recv_expr | if_expr | fun_expr | base_expr 
+
+case_expr := "case" expr "(" pattern_case* ")"
+try_expr := "try" expr "fail" "(" pattern_case* ")"
+recv_expr := "recv" ("(" type_pairs ")")? "(" pattern_case* ")"
+if_expr := "if" expr "then" expr ("elif" expr "then")* "else" expr
+fun_expr := "fn" id? "(" function_args? ")" pattern_guards? "=>" expr
+
+base_expr := 
+    primary ("[" expr "]")* | // index
+    primary ("(" (expr ("," expr)*)? ")")* | // call
+    primary (("*" | "/" | "%") base_expr )* |
+    primary (("+" | "-") base_expr )* |
+    primary ((">>" | "<<") base_expr )* |
+    primary ("is" | "isnt") base_expr )* |
+    primary ((">=" | "<=" | ">" | "<") base_expr )* |
+    primary ("&" base_expr )* |
+    primary ("^" base_expr )* |
+    primary ("|" base_expr )* |
+    primary ("and" base_expr )* |
+    primary ("or" base_expr )* |
+    primary
+
+pattern_case := pattern "->" expr
+primary := unary | literal | "(" expr* ")"
+unary := ("not" | "fail" "with" | "-" | "+") expr
+
+literal := list | tuple | binary | type_match | atom | id | number
+list := "[" expr ("," expr)* ("..." expr)* "]"
+tuple := "{" (expr ("," expr)*)? "}"
+
+binary := escaped_string | binary_string | binary_literal
+escaped_string := "$" "\"" string_stuff* "{" expr "}" string_stuff* "\""
+binary_string := "\"" string_stuff* "\""
+binary_literal := "[<" binary_literal_args? ">]"
+binary_literal_args := binary_literal_arg ("," binary_literal_arg)*
+binary_literal_arg := binary_arg | expr
+
+number := js_number_stuff
+id := [a-z_][a-zA-Z0-9_]*
+type := [A-Z][a-zA-Z0-9_]*
+atom_name := [a-zA-Z_][a-zA-Z0-9_]*
+atom := ":" ~ atom_name ~ ("." ~ atom_name)*
+
+_line_comment := "#" ^[\n]*
+_block_comment := "#(" ^[")#"]* ")#" // can be nested
