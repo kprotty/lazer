@@ -2,10 +2,11 @@
 A module is the top-level object of the bytecode. Each bytecode file can be a module (usually what is expected). A module contains constants & functions with bytecode. All bytes are in little-endian.
 
 ```rust
-struct Module:
+struct Module {
     header: u24
     version: u8
     module_type: u8
+}
 ```
 
 * **header**: a constant "LZR" string to denote the following bytes as bytecode
@@ -19,9 +20,10 @@ struct Module:
 A compilation of modules packed into a single file or memory buffer. Used for loading and serializing multiple modules or files in a single project. Compression may be added later on
 
 ```rust
-struct Archive:
+struct ArchiveModule {
     num_sections: u8
     modules: Module[num_sections]
+}
 ```
 
 If there are more than `max(u8) == 255` modules, one could always have another nested `Archive` module inside the array of modules for tree-like extensions of many modules.
@@ -30,11 +32,12 @@ If there are more than `max(u8) == 255` modules, one could always have another n
 Representing a module which links to a shared library for something like C FFI, it simply contains the name of the module, a path to the library as well and the native functions to look for. FFI will be defined later.
 
 ```rust
-struct Native:
+struct NativeModule {
     num_sections: u8
     module_name: Atom
     library_path: Binary8
     functions: Atom[num_sections]
+}
 ```
 
 [Atom]() and [Binary8]() are defined later on for the [Bytecode]() module. Since they share the same structure, its easier to link them here.
@@ -43,11 +46,42 @@ struct Native:
 The most common type of module. This is usually the product of a compiler compromising of constants and actual lazer bytecode to execute.
 
 ```rust
-struct Bytecode:
+struct BytecodeModule {
     flags: u8
-    num_constants: u16
-    constants: Constant[num_constants]
-    ?line_table: LineTable
-    bytecode_size: u32
-    bytecode: u32[bytecode_size]
+    ?stack_map: StackMap
+    ?source_info: SourceInfo
+    ?exceptions: ExceptionTable
+    constants: Constants
+    bytecode: Bytecode
+}
+```
+
+Each bit in the `flags` represents an attribute regarding current module with the bits undefined remaining reserved:
+    * `00000001`: represents if the module contains a StackMap struct
+    * `00000010`: represents if the module contains a SourceInfo struct
+    * `00000100`: represents if the module contains an ExceptionTable struct
+
+#### Module > Bytecode > StackMap
+The stack map is used to plot out which registers are live at different points in the bytecode for the garbage collector to use when
+```rust
+struct StackMap {
+    num_entries: u32
+    stack_maps: RegisterMap[num_entries]
+}
+
+struct SourceInfo {
+    source
+}
+
+struct ExceptionTable {
+
+}
+
+struct Constants {
+
+}
+
+struct Bytecode {
+
+}
 ```
