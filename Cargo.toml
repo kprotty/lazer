@@ -10,4 +10,4 @@ default-features = false
 
 [target.'cfg(windows)'.dependencies.winapi]
 version = "*"
-features = []
+features = ["winnt", "memoryapi"]
