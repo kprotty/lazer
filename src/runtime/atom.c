@@ -1,6 +1,6 @@
 #include "atom.h"
 #include <string.h>
-#include "memory/heap.h"
+#include "os/heap.h"
 
 #define MAX_ATOM_TE
 

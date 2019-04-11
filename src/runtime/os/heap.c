@@ -1,4 +1,5 @@
 #include "heap.h"
+#include "lock.h"
 
 #define HEAP_SIZE (LZR_HEAP_END - LZR_HEAP_BEGIN)
 #define HEAP_PTR(offset) (LZR_HEAP_BEGIN + ((offset) * LZR_HEAP_CHUNK_SIZE))
@@ -17,6 +18,7 @@ typedef struct {
 } chunk_info_t;
 
 typedef struct {
+    lzr_spinlock_t lock;
     uint16_t top_heap;
     uint16_t top_chunk;
     freelist_t free_list;
@@ -56,6 +58,7 @@ void lzr_heap_commit() {
     heap->top_chunk = 0;
     heap->free_list.head = 0;
     heap->free_list.tail = 0;
+    lzr_spinlock_init(&heap->lock);
 
     heap->chunks[0].prev = 0;
     heap->chunks[0].next = 0;
@@ -92,6 +95,7 @@ void freelist_remove(heap_t* heap, uint16_t chunk) {
 
 void* lzr_heap_alloc(uint16_t num_chunks) {
     heap_t* heap = (heap_t*) HEAP_PTR(heap_offset);
+    lzr_spinlock_lock(&heap->lock);
     void* address;
 
     // using Best-Fit search, try and find a free chunk in the free list
@@ -135,6 +139,7 @@ void* lzr_heap_alloc(uint16_t num_chunks) {
         address = (void*) HEAP_PTR(heap_offset + top);
     }
 
+    lzr_spinlock_unlock(&heap->lock);
     return address;
 }
 
@@ -147,6 +152,8 @@ void lzr_heap_free(void* ptr) {
     // get the chunk info and make sure that it was allocated before freeing
     uint16_t ptr_chunk = ((size_t) ptr - heap_offset - LZR_HEAP_BEGIN) / LZR_HEAP_CHUNK_SIZE;
     chunk_info_t* ptr_chunk_info = &heap->chunks[ptr_chunk];
+    
+    lzr_spinlock_lock(&heap->lock);
     assert(ptr_chunk_info->allocated == true);
     ptr_chunk_info->allocated = false;
 
@@ -184,4 +191,6 @@ void lzr_heap_free(void* ptr) {
     } else {
         freelist_append(heap, ptr_chunk);
     }
+
+    lzr_spinlock_unlock(&heap->lock);
 }
