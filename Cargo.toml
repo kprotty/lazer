@@ -1,0 +1,13 @@
+[package]
+name = "lazer"
+edition = "2018"
+version = "0.1.0"
+authors = ["kprotty"]
+
+[target.'cfg(unix)'.dependencies.libc]
+version = "*"
+default-features = false
+
+[target.'cfg(windows)'.dependencies.winapi]
+version = "*"
+features = []

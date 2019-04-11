@@ -2,10 +2,7 @@
 
 Imagine Elixir, but over-engineered and focused on memory usage. It should be safe to say that this is more of a research project than a solution to a practical problem therefore it should not be used in production. Heavily inspired by Erlang BEAM as well as Ponylang.
 
-## (makeshift) Compiling
+## Compiling
 ```
-mkdir build
-cd build
-cmake -GNinja ..
-ninja
+cargo build --release
 ```
