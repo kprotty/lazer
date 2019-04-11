@@ -3,6 +3,7 @@
     start,
     lang_items,
     core_intrinsics,
+    optin_builtin_traits,
 )]
 
 #[cfg(target_os = "windows")]
