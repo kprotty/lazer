@@ -1,4 +1,8 @@
+use coer::num::NonZeroU16;
 use core::marker::PhantomData;
+
+use super::platform::memory;
+use super::platform::lock::Spinlock;
 
 /// Lazer memory-maps a fixed 32gb of heap and allocates chunks off of it at a 2mb granularity.
 /// This is because 32bg worth of address space is 35 bits. When addresses are aligned by 8 bytes
