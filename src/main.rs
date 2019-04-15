@@ -2,13 +2,14 @@
 #![feature(
     start,
     lang_items,
+    try_blocks,
     core_intrinsics,
     optin_builtin_traits,
 )]
 
-#[cfg(target_os = "windows")]
+#[cfg(target_os="windows")]
 extern crate winapi;
-#[cfg(target_os = "linux")]
+#[cfg(target_os="linux")]
 extern crate libc;
 
 mod panic;
@@ -16,9 +17,9 @@ mod runtime;
 mod platform;
 mod compiler;
 
-#[cfg(not(all(
-    any(target_os = "windows", target_os = "linux"),
-    any(target_arch = "x86_64", target_arch = "aarch64"),
+#[cfg(not(any(
+    all(target_os="linux", any(target_arch="x86_64")),
+    all(target_os="windows", any(target_arch="x86_64")),
 )))] compile_error!("Platform not supported");
 
 #[start]
