@@ -17,9 +17,13 @@ pub fn build(b: *Builder) void {
 
     b.default_step.dependOn(&lazer.step);
     b.installArtifact(lazer);
-
+    
+    // for running lazer sometimes when testing
     const run = b.step("run", "Run to test the lazer executable");
     run.dependOn(&lazer.run().step);
+
+    // for executing actual test cases
+    createTests(b);
 }
 
 fn getBuildMode(b: *Builder) builtin.Mode {
@@ -31,4 +35,9 @@ fn getBuildMode(b: *Builder) builtin.Mode {
         else if (small) builtin.Mode.ReleaseSmall
         else builtin.Mode.Debug
     );
+}
+
+fn createTests(b: *Builder) void {
+    const tests = b.step("test", "Run all the tests");
+    tests.dependOn(&b.addTest("src/os/memory.zig").step);
 }
