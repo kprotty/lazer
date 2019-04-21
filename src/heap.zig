@@ -1,5 +1,6 @@
 const memory = @import("memory.zig");
 const assert = @import("std").debug.assert;
+const Spinlock = @import("lock.zig").Spinlock;
 
 pub const BEGIN = 1 << 35;
 pub const END   = 1 << 36;
@@ -44,6 +45,9 @@ pub fn init() HeapError!void {
 pub fn alloc(chunks: u16) HeapError![*]u8 {
     const heap = @intToPtr(*Heap, heapOffset(0));
 
+    heap.mutex.acquire();
+    defer heap.mutex.release();
+
     if (heap.findBestFit(chunks)) |free_span| {
         return @intToPtr([*]u8, heapOffset(free_span));
     } else if (heap.bumpAllocate(chunks)) |span| {
@@ -59,6 +63,9 @@ pub fn free(ptr: usize) HeapError!void {
     
     if (!isHeapAddress(ptr, CHUNK_SIZE) or heap.spans[span].allocated != 1)
         return HeapError.InvalidAddress;
+
+    heap.mutex.acquire();
+    defer heap.mutex.release();
 
     heap.coalesceRight(span);
     heap.coalesceLeft(span);
@@ -79,6 +86,7 @@ const Heap = struct {
 
     top_span: u16,
     top_chunk: u16,
+    mutex: Spinlock,
     spans: [MAX_CHUNKS]Span,
     free_list: struct {
         head: u16,
@@ -89,6 +97,7 @@ const Heap = struct {
         self.top_chunk = 1;
         self.spans[0].chunks = 1;
         self.spans[0].allocated = 1;
+        self.mutex = Spinlock.new();
     }
 
     pub fn findBestFit(self: *Self, chunks: u16) ?u16 {
