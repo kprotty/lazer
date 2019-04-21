@@ -1,4 +1,4 @@
-const memory = @import("os/memory.zig");
+const memory = @import("memory.zig");
 const assert = @import("std").debug.assert;
 
 pub const BEGIN = 1 << 35;
