@@ -28,14 +28,12 @@ pub fn map(address: usize, bytes: usize) usize {
 pub fn commit(address: usize, bytes: usize) bool {
     if (windows)
         return VirtualAlloc(address, bytes, MEM_COMMIT, PAGE_READWRITE) == address;
-    
     return true; // linux overcommits by default
 }
 
 pub fn decommit(address: usize, bytes: usize) bool {
     if (windows)
-        return VirtualFree(address, bytes, MEM_DECOMMIT) != 0;
-    
+        return VirtualFree(address, bytes, MEM_DECOMMIT);
     return linux.syscall3(linux.SYS_madvise, address, bytes, MADV_DONTNEED) == 0;
 }
 
