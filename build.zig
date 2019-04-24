@@ -40,6 +40,6 @@ fn getBuildMode(b: *Builder) builtin.Mode {
 fn createTests(b: *Builder) void {
     const tests = b.step("test", "Run all the tests");
 
-    tests.dependOn(&b.addTest("src/heap.zig").step);
-    tests.dependOn(&b.addTest("src/memory.zig").step);
+    tests.dependOn(&b.addTest("src/platform/heap.zig").step);
+    tests.dependOn(&b.addTest("src/platform/memory.zig").step);
 }
