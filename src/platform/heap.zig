@@ -31,7 +31,10 @@ pub const HeapError = error {
     InvalidAddress,
 };
 
+var initialized: bool = false;
+
 pub fn init() HeapError!void {
+    assert(!initialized);
     const heap = @intToPtr(*Heap, heapOffset(0));
 
     if (memory.map(@ptrToInt(heap), Heap.HEAP_SIZE) == 0)
@@ -40,9 +43,11 @@ pub fn init() HeapError!void {
         return HeapError.CommitFailed;
 
     heap.init();
+    initialized = true;
 }
 
 pub fn alloc(chunks: u16) HeapError![*]u8 {
+    assert(initialized);
     const heap = @intToPtr(*Heap, heapOffset(0));
 
     heap.mutex.acquire();
@@ -58,6 +63,7 @@ pub fn alloc(chunks: u16) HeapError![*]u8 {
 }
 
 pub fn free(ptr: usize) HeapError!void {
+    assert(initialized);
     const heap = @intToPtr(*Heap, heapOffset(0));
     const span = @intCast(u16, (ptr - BEGIN) / CHUNK_SIZE);
     
