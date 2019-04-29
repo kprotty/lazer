@@ -5,7 +5,6 @@
     lang_items,
     try_blocks,
     core_intrinsics,
-    optin_builtin_traits,
 )]
 
 #[cfg(target_os="windows")]

@@ -58,7 +58,7 @@ mod memory {
         }
     }
 
-    pub unsafe fn commit(address: usize, bytes: usize) -> Option<()> {
+    pub unsafe fn commit(_address: usize, _bytes: usize) -> Option<()> {
         // linux over-commits by default
         Some(())
     }
@@ -84,7 +84,7 @@ mod memory {
         }
     }
 
-    pub unsafe fn unmap(address: usize, bytes: usize) -> Option<()> {
+    pub unsafe fn unmap(address: usize, _bytes: usize) -> Option<()> {
         match VirtualFree(address as *mut _, 0, MEM_RELEASE) {
             TRUE => Some(()),
             _ => None,
