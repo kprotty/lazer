@@ -105,3 +105,23 @@ mod memory {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn virtual_memory() {
+        const TEST_ADDRESS: usize = 1 << 32;
+        const TEST_ADDR_LEN: usize = 64;
+
+        let memory = map::<u8>(TEST_ADDRESS, TEST_ADDR_LEN).unwrap();
+        let _ = commit(&memory[..2]).unwrap();
+
+        memory[1] = 0xff;
+        assert_eq!(memory[1], 0xff);
+
+        let _ = decommit(&memory[..2]).unwrap();
+        let _ = unmap(memory).unwrap();
+    }
+}
