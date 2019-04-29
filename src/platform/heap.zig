@@ -14,14 +14,14 @@ pub inline fn compressPtr(comptime T: type, ptr: T) u32 {
 
 pub inline fn decompressPtr(comptime T: type, compressed: u32) T {
     return @intToPtr(T, (usize(compressed) << 3) + BEGIN);
-} 
+}
 
 inline fn heapOffset(chunk_offset: u16) usize {
     return BEGIN + usize(chunk_offset) * CHUNK_SIZE;
 }
 
 inline fn isHeapAddress(address: usize, comptime alignment: usize) bool {
-    return address % alignment == 0 and address >= BEGIN and address < END;
+    return (address % alignment == 0) and address >= BEGIN and address < END;
 }
 
 pub const HeapError = error {
@@ -34,7 +34,7 @@ pub const HeapError = error {
 var initialized: bool = false;
 
 pub fn init() HeapError!void {
-    assert(!initialized);
+    if (initialized) return;
     const heap = @intToPtr(*Heap, heapOffset(0));
 
     if (memory.map(@ptrToInt(heap), Heap.HEAP_SIZE) == 0)
@@ -44,6 +44,11 @@ pub fn init() HeapError!void {
 
     heap.init();
     initialized = true;
+}
+
+pub fn deinit() void {
+    assert(initialized);
+    assert(memory.unmap(heapOffset(0), Heap.HEAP_SIZE));
 }
 
 pub fn alloc(chunks: u16) HeapError![*]u8 {
@@ -117,9 +122,9 @@ const Heap = struct {
             }
             span = self.spans[span].next;
         }
+        
         if (free_span == 0)
             return null;
-
         if (self.spans[free_span].chunks > chunks) {
             const left_over = free_span + chunks;
             self.spans[left_over].chunks = self.spans[free_span].chunks - chunks;
@@ -209,6 +214,7 @@ const Heap = struct {
 
 test "Heap allocation" {
     try init();
+    defer deinit();
 
     // test chunk allocation
     assert(@ptrToInt(try alloc(1)) == heapOffset(1));

@@ -5,6 +5,7 @@ const Builder = std.build.Builder;
 pub fn build(b: *Builder) void {
     const lazer = b.addExecutable("lazer", "src/main.zig");
     lazer.setBuildMode(getBuildMode(b));
+    lazer.setMainPkgPath("src/");
 
     // only support windows & linux x86_64 for now
     if (builtin.os != builtin.Os.windows and builtin.os != builtin.Os.linux) {
@@ -38,8 +39,17 @@ fn getBuildMode(b: *Builder) builtin.Mode {
 }
 
 fn createTests(b: *Builder) void {
-    const tests = b.step("test", "Run all the tests");
+    const test_files = [][]const u8 {
+        "src/platform/heap.zig",
+        "src/platform/memory.zig",
 
-    tests.dependOn(&b.addTest("src/platform/heap.zig").step);
-    tests.dependOn(&b.addTest("src/platform/memory.zig").step);
+        "src/runtime/atom.zig",
+    };
+
+    const tests = b.step("test", "Run all the tests");
+    for (test_files) |test_file| {
+        const test_step = b.addTest(test_file);
+        test_step.setMainPkgPath("src/");
+        tests.dependOn(&test_step.step);
+    }
 }
